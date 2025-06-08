@@ -6,6 +6,16 @@ import time
 import datetime
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
+
+# di dalam scrape_ulasan()
+options = Options()
+options.add_argument("--headless")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
 
 # 🔗 Koneksi ke DB Cloud SQL PostgreSQL
 def connect_db():
