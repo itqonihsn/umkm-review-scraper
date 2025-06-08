@@ -18,13 +18,15 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), opti
 
 
 # 🔗 Koneksi ke DB Cloud SQL PostgreSQL
+import os
+
 def connect_db():
     return psycopg2.connect(
-        host="34.101.50.182",
-        database="ulasan",
-        user="postgres",
-        password="Wszdrfc130997",
-        port=5432
+        host=os.getenv("DB_HOST"),
+        database=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        port=os.getenv("DB_PORT")
     )
 
 # 💾 Simpan ke database
