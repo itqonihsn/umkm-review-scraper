@@ -1,25 +1,15 @@
+import os
 import psycopg2
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from bs4 import BeautifulSoup
 import time
 import datetime
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
-
-# di dalam scrape_ulasan()
-options = Options()
-options.add_argument("--headless")
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
-
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
+from bs4 import BeautifulSoup
+from webdriver_manager.chrome import ChromeDriverManager
 
 # 🔗 Koneksi ke DB Cloud SQL PostgreSQL
-import os
-
 def connect_db():
     return psycopg2.connect(
         host=os.getenv("DB_HOST"),
@@ -45,27 +35,32 @@ def simpan_ke_db(data):
 
 # 🚀 Jalankan scraper
 def scrape_ulasan():
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    url = "https://www.tokopedia.com/mykonos/review"  # URL produk Tokopedia atau marketplace lain
+    options = Options()
+    options.add_argument("--headless=new")  # versi baru
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+    url = "https://www.tokopedia.com/mykonos/review"
     driver.get(url)
     time.sleep(5)
 
     data = []
-    for i in range(0, 2):
+    for i in range(2):
         soup = BeautifulSoup(driver.page_source, "html.parser")
         containers = soup.findAll('article', attrs={'class': 'css-1pr2lii'})
         print(f"🔍 Halaman {i+1} ditemukan {len(containers)} ulasan")
 
         for container in containers:
             try:
-                # tombol "Selengkapnya"
                 selengkapnya = container.find('button', {'class': 'css-89c2tx'})
                 if selengkapnya:
                     try:
                         driver.execute_script("arguments[0].click();", selengkapnya)
                         time.sleep(1)
                     except:
-                        pass  # ignore error
+                        pass
 
                 review_tag = container.find('span', {'data-testid': 'lblItemUlasan'})
                 review = review_tag.text if review_tag else None
@@ -83,7 +78,6 @@ def scrape_ulasan():
                 tanggal = tanggal_tag.text if tanggal_tag else None
 
                 if all([user, nama_produk, rating, review, tanggal]):
-                    # convert tanggal to datetime
                     try:
                         tanggal_obj = datetime.datetime.strptime(tanggal, '%d %B %Y').date()
                     except:
@@ -107,11 +101,11 @@ def scrape_ulasan():
 
     driver.quit()
 
-    # Simpan ke DB
     if data:
         simpan_ke_db(data)
     else:
         print("📭 Tidak ada data untuk disimpan.")
 
-# Run
-scrape_ulasan()
+# Jalankan
+if __name__ == "__main__":
+    scrape_ulasan()
