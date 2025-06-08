@@ -47,7 +47,7 @@ def scrape_ulasan():
     time.sleep(5)
 
     data = []
-    for i in range(2):
+    for i in range(6):
         soup = BeautifulSoup(driver.page_source, "html.parser")
         containers = soup.findAll('article', attrs={'class': 'css-1pr2lii'})
         print(f"🔍 Halaman {i+1} ditemukan {len(containers)} ulasan")
